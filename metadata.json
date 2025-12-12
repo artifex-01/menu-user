@@ -1,0 +1,8 @@
+{
+  "name": "TableScan & Dine",
+  "description": "A hybrid home screen application combining a QR code scanner for table service with AI-powered nearby restaurant discovery.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
