@@ -3,7 +3,7 @@ import QRScanner from './components/QRScanner';
 import NearbyList from './components/NearbyList';
 import { 
   Search, ArrowLeft, SlidersHorizontal, Plus, ShoppingBag, 
-  Minus, Trash2, CreditCard, Star, X
+  Minus, Trash2, Star, X, QrCode, ArrowRight
 } from 'lucide-react';
 
 // Mock Screens/Activities
@@ -11,7 +11,8 @@ enum Activity {
   HOME,
   MENU,
   NEARBY_LIST,
-  CART
+  CART,
+  FULL_SCANNER
 }
 
 // Mock Data for Menu
@@ -88,16 +89,17 @@ const App: React.FC = () => {
     if (scanResult === data) return;
     
     // Haptic feedback if available
-    if (navigator.vibrate) navigator.vibrate(50);
+    if (navigator.vibrate) navigator.vibrate(100);
 
     setScanResult(data);
     const storeId = data.includes(':') ? data.split(':')[1] : 'unknown-store';
     
+    // Slight delay to show success
     setTimeout(() => {
+        setScanResult(null); // Reset scan result logic for next time
         setSelectedStoreId(storeId);
         setCurrentActivity(Activity.MENU);
-        setScanResult(null);
-    }, 400);
+    }, 300);
   }, [scanResult]);
 
   const handleStoreSelect = (storeId: string) => {
@@ -399,24 +401,18 @@ const App: React.FC = () => {
       );
   }
 
-  // --- NEARBY LIST ACTIVITY ---
-  if (currentActivity === Activity.NEARBY_LIST) {
-    return (
-        <div className="h-full w-full bg-gray-50 flex flex-col animate-in slide-in-from-bottom duration-300 relative">
-            <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-200/50 px-4 py-3 pt-safe-top flex items-center gap-4 shadow-sm">
-                <button 
-                  onClick={() => setCurrentActivity(Activity.HOME)} 
-                  className="p-2 -ml-2 hover:bg-gray-100 rounded-full active:scale-95 transition-all"
-                >
-                    <ArrowLeft className="w-6 h-6 text-gray-900" />
-                </button>
-                <h1 className="font-bold text-xl text-gray-900 tracking-tight">Discover Nearby</h1>
-            </header>
-            <div className="flex-1 overflow-hidden relative">
-               <NearbyList onViewAll={() => {}} onStoreSelect={handleStoreSelect} />
-            </div>
-        </div>
-    );
+  // --- FULL SCANNER ACTIVITY ---
+  if (currentActivity === Activity.FULL_SCANNER) {
+      return (
+          <div className="h-full w-full bg-black relative animate-in fade-in duration-300">
+              <QRScanner 
+                  onScan={handleScan} 
+                  isScanning={true} 
+                  isFullScreen={true}
+                  onClose={() => setCurrentActivity(Activity.HOME)}
+              />
+          </div>
+      );
   }
 
   // --- HOME ACTIVITY (Hybrid Split Screen) ---
@@ -434,19 +430,40 @@ const App: React.FC = () => {
                 placeholder="Find a restaurant..." 
                 className="bg-transparent border-none outline-none text-white placeholder-white/70 flex-1 px-3 text-base font-medium"
             />
+            {/* Filter Button */}
             <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 text-white transition-colors">
                 <SlidersHorizontal className="w-5 h-5" />
             </button>
          </div>
       </div>
 
-      {/* Upper Half: Camera */}
-      {/* Expanded slightly to 58% for better view */}
-      <div className="h-[58%] relative w-full bg-zinc-900 shrink-0">
-         <QRScanner 
-            onScan={handleScan} 
-            isScanning={currentActivity === Activity.HOME} 
-         />
+      {/* Upper Half: Call to Action Area (Replaced Live Camera) */}
+      <div className="h-[55%] relative w-full bg-zinc-900 shrink-0 flex flex-col items-center justify-center text-center p-8 pt-20">
+         {/* Decorative Background Elements */}
+         <div className="absolute inset-0 overflow-hidden pointer-events-none">
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-orange-600/10 rounded-full blur-[80px]"></div>
+         </div>
+
+         <div className="relative z-10 flex flex-col items-center animate-in fade-in zoom-in duration-700">
+             {/* Icon */}
+             <div className="w-24 h-24 bg-zinc-800 rounded-3xl flex items-center justify-center mb-6 shadow-2xl border border-white/5 ring-4 ring-white/5">
+                <QrCode className="w-10 h-10 text-orange-500" />
+             </div>
+             
+             {/* Text */}
+             <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Scan & Dine</h1>
+             <p className="text-white/60 text-lg mb-8 font-medium">Scan a QR code to view menu</p>
+             
+             {/* Primary Action Button */}
+             <button 
+                onClick={() => setCurrentActivity(Activity.FULL_SCANNER)}
+                className="group relative flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full font-bold text-lg shadow-[0_8px_40px_rgba(249,115,22,0.4)] active:scale-95 transition-all hover:shadow-[0_12px_50px_rgba(249,115,22,0.5)] hover:-translate-y-1"
+             >
+                <QrCode className="w-5 h-5" />
+                <span>Scan QR Code</span>
+                <ArrowRight className="w-5 h-5 opacity-60 group-hover:translate-x-1 transition-transform" />
+             </button>
+         </div>
          
          {/* Smooth gradient blend */}
          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none z-10"></div>

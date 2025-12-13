@@ -1,13 +1,15 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import jsQR from 'https://esm.sh/jsqr';
-import { ScanLine, Zap, ZapOff, RefreshCw, Camera } from 'lucide-react';
+import { Zap, ZapOff, RefreshCw, VideoOff, X, ScanLine } from 'lucide-react';
 
 interface QRScannerProps {
   onScan: (code: string) => void;
   isScanning: boolean;
+  isFullScreen?: boolean;
+  onClose?: () => void;
 }
 
-const QRScanner: React.FC<QRScannerProps> = ({ onScan, isScanning }) => {
+const QRScanner: React.FC<QRScannerProps> = ({ onScan, isScanning, isFullScreen = false, onClose }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -27,8 +29,9 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, isScanning }) => {
     }
 
     try {
-      // Try with environment facing mode first (phones)
-      let stream: MediaStream;
+      let stream: MediaStream | null = null;
+      
+      // Strategy 1: Environment (Rear) Camera with ideal resolution
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: { 
@@ -37,17 +40,42 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, isScanning }) => {
             height: { ideal: 720 }
           }
         });
-      } catch (err) {
-        console.warn("Environment camera failed, trying fallback...", err);
-        // Fallback to any video source (desktop webcam)
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: true
-        });
+      } catch (e) {
+        console.debug("Ideal environment constraints failed, attempting fallback 1...");
+      }
+
+      // Strategy 2: Environment Camera without resolution constraints
+      if (!stream) {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "environment" }
+            });
+          } catch (e) {
+            console.debug("Environment facing mode failed, attempting fallback 2...");
+          }
+      }
+
+      // Strategy 3: User (Front) Camera as backup 
+      if (!stream) {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "user" }
+            });
+        } catch (e) {
+             console.debug("User facing mode failed, attempting fallback 3...");
+        }
+      }
+
+      // Strategy 4: Any video device
+      if (!stream) {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true
+          });
       }
 
       // If component unmounted during async call or scanning stopped
       if (!isScanning) {
-        stream.getTracks().forEach(track => track.stop());
+        if (stream) stream.getTracks().forEach(track => track.stop());
         return;
       }
 
@@ -65,10 +93,12 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, isScanning }) => {
       // Determine user friendly error
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
          setErrorMsg("Permission denied. Please allow camera access in your browser settings.");
-      } else if (err.name === 'NotFoundError') {
-         setErrorMsg("No camera device found.");
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+         setErrorMsg("No camera device found on your device.");
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+         setErrorMsg("Camera is in use by another application.");
       } else {
-         setErrorMsg("Unable to access camera. " + (err.message || ""));
+         setErrorMsg(err.message || "Unable to access camera.");
       }
       setHasPermission(false);
     }
@@ -104,8 +134,6 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, isScanning }) => {
   const toggleFlash = async () => {
     if (!streamRef.current) return;
     const track = streamRef.current.getVideoTracks()[0];
-    
-    // Check capability
     const capabilities = track.getCapabilities ? track.getCapabilities() : {};
     
     // @ts-ignore
@@ -135,7 +163,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, isScanning }) => {
       ) {
         const video = videoRef.current;
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
         if (ctx) {
           canvas.height = video.videoHeight;
@@ -169,24 +197,29 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, isScanning }) => {
 
   if (hasPermission === false) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-zinc-900/95 backdrop-blur-sm text-gray-300 p-10 text-center relative z-20 animate-in fade-in duration-500">
-        
-        {/* Larger Icon Container */}
-        <div className="w-24 h-24 bg-zinc-800/80 rounded-[2rem] flex items-center justify-center mb-8 shadow-2xl ring-1 ring-white/5">
-            <Camera className="w-12 h-12 text-white/50" />
+      <div className="flex flex-col items-center justify-center h-full bg-black text-gray-300 p-10 text-center relative z-50 animate-in fade-in duration-300">
+        {onClose && (
+            <button 
+                onClick={onClose}
+                className="absolute top-safe-top left-6 p-3 bg-white/10 rounded-full text-white hover:bg-white/20 active:scale-95 transition-all"
+            >
+                <X className="w-6 h-6" />
+            </button>
+        )}
+
+        <div className="w-24 h-24 bg-zinc-800 rounded-[2rem] flex items-center justify-center mb-8 shadow-2xl ring-1 ring-white/5">
+            <VideoOff className="w-10 h-10 text-white/40" />
         </div>
         
-        {/* Larger Typography */}
-        <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">Camera Access Needed</h3>
+        <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">Camera Unavailable</h3>
         
         <p className="text-base opacity-70 leading-relaxed max-w-sm mx-auto mb-10">
-          {errorMsg || "To scan menus, please enable camera permissions in your browser settings."}
+          {errorMsg || "We couldn't access your camera. Please check permissions."}
         </p>
         
-        {/* Larger Button */}
         <button 
           onClick={() => startCamera()}
-          className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full font-bold text-base active:scale-95 transition-transform hover:bg-gray-100 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+          className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full font-bold text-base active:scale-95 transition-transform hover:bg-gray-100"
         >
           <RefreshCw className="w-5 h-5" />
           Retry Camera
@@ -196,52 +229,63 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScan, isScanning }) => {
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-black">
+    <div className="relative w-full h-full overflow-hidden bg-black touch-none">
       <canvas ref={canvasRef} className="hidden" />
       
+      {/* Video Feed */}
       <video 
         ref={videoRef} 
-        className="absolute inset-0 w-full h-full object-cover opacity-90" 
+        className="absolute inset-0 w-full h-full object-cover" 
         muted 
         autoPlay
         playsInline
       />
 
-      {/* Clean Vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.6)_100%)] pointer-events-none"></div>
-
-      {/* Center UI */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-        
-        {/* Minimalist Scan Frame */}
-        <div className="relative w-64 h-64 mb-16 rounded-[2rem] border border-white/30 shadow-2xl overflow-hidden">
-             {/* Glowing corners */}
-            <div className="absolute top-0 left-0 w-16 h-16 border-t-[3px] border-l-[3px] border-white rounded-tl-[1.8rem]"></div>
-            <div className="absolute top-0 right-0 w-16 h-16 border-t-[3px] border-r-[3px] border-white rounded-tr-[1.8rem]"></div>
-            <div className="absolute bottom-0 left-0 w-16 h-16 border-b-[3px] border-l-[3px] border-white rounded-bl-[1.8rem]"></div>
-            <div className="absolute bottom-0 right-0 w-16 h-16 border-b-[3px] border-r-[3px] border-white rounded-br-[1.8rem]"></div>
-            
-            {/* Subtle Scan Line */}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-transparent animate-scan-fast"></div>
-            <div className="absolute top-1/2 w-full h-[1px] bg-white/50 shadow-[0_0_20px_white] animate-scan-line"></div>
-        </div>
-
-        {/* Floating Instruction */}
-        <div className="bg-black/40 backdrop-blur-md px-5 py-2 rounded-full border border-white/10 shadow-lg">
-           <p className="text-white/90 font-medium text-sm tracking-wide">
-             Point at table QR code
-           </p>
-        </div>
+      {/* Darkened Overlay */}
+      <div className="absolute inset-0 bg-black/50 pointer-events-none"></div>
+      
+      {/* Cutout / Focus Area - Using CSS mask for cleaner cutout effect */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+         <div className="relative w-72 h-72 rounded-[2.5rem] shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] overflow-hidden">
+             {/* Scanner Corners - Orange */}
+             <div className="absolute top-0 left-0 w-20 h-20 border-t-[5px] border-l-[5px] border-orange-500 rounded-tl-[2.2rem]"></div>
+             <div className="absolute top-0 right-0 w-20 h-20 border-t-[5px] border-r-[5px] border-orange-500 rounded-tr-[2.2rem]"></div>
+             <div className="absolute bottom-0 left-0 w-20 h-20 border-b-[5px] border-l-[5px] border-orange-500 rounded-bl-[2.2rem]"></div>
+             <div className="absolute bottom-0 right-0 w-20 h-20 border-b-[5px] border-r-[5px] border-orange-500 rounded-br-[2.2rem]"></div>
+             
+             {/* Scan Line Animation */}
+             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-500/20 to-transparent animate-scan-fast"></div>
+         </div>
       </div>
 
-      {/* Flash Control */}
-      <div className="absolute bottom-36 right-6 z-20 pointer-events-auto">
-         <button 
+      {/* Controls UI - Top */}
+      <div className="absolute top-0 left-0 right-0 p-5 pt-safe-top flex justify-between items-start z-30">
+        {onClose && (
+            <button 
+                onClick={onClose}
+                className="w-12 h-12 bg-black/40 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white active:scale-90 transition-all hover:bg-black/60 shadow-lg"
+            >
+                <X className="w-6 h-6" />
+            </button>
+        )}
+        
+        {/* Flash Toggle */}
+        <button 
            onClick={toggleFlash}
-           className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-md border ${torchOn ? 'bg-white text-orange-500 border-white shadow-[0_0_20px_rgba(255,255,255,0.4)]' : 'bg-black/30 text-white border-white/20 hover:bg-black/50'}`}
+           className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-md border ml-auto shadow-lg active:scale-90 ${torchOn ? 'bg-orange-500 text-white border-orange-400' : 'bg-black/40 text-white border-white/10 hover:bg-black/60'}`}
          >
            {torchOn ? <Zap className="w-5 h-5 fill-current" /> : <ZapOff className="w-5 h-5" />}
          </button>
+      </div>
+
+      {/* Instructions - Bottom */}
+      <div className="absolute bottom-16 left-0 right-0 z-20 flex flex-col items-center pointer-events-none px-6">
+        <div className="bg-black/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 shadow-lg">
+           <p className="text-white font-semibold text-sm tracking-wide flex items-center gap-2">
+             <ScanLine className="w-4 h-4 text-orange-400" />
+             Align QR code within the frame
+           </p>
+        </div>
       </div>
     </div>
   );
