@@ -438,7 +438,7 @@ const App: React.FC = () => {
       </div>
 
       {/* Upper Half: Call to Action Area */}
-      <div className="h-[52%] relative w-full bg-zinc-950 shrink-0 flex flex-col items-center justify-center text-center p-6 pt-20 overflow-hidden">
+      <div className="h-[48%] relative w-full bg-zinc-950 shrink-0 flex flex-col items-center justify-center text-center p-6 pt-24 overflow-hidden">
          
          {/* Background Glow */}
          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-orange-600/10 rounded-full blur-[100px] pointer-events-none"></div>
@@ -446,25 +446,25 @@ const App: React.FC = () => {
          <div className="relative z-10 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
              
              {/* Hero Icon */}
-             <div className="mb-6 relative group" onClick={() => setCurrentActivity(Activity.FULL_SCANNER)}>
+             <div className="mb-5 relative group" onClick={() => setCurrentActivity(Activity.FULL_SCANNER)}>
                 <div className="absolute inset-0 bg-gradient-to-tr from-orange-600 to-amber-600 rounded-[1.5rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
-                <div className="relative w-24 h-24 bg-[#121214] border border-white/10 rounded-[1.5rem] flex items-center justify-center shadow-2xl active:scale-95 transition-transform">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center text-white shadow-inner border-t border-white/20">
-                        <QrCode className="w-6 h-6" />
+                <div className="relative w-20 h-20 bg-[#121214] border border-white/10 rounded-[1.5rem] flex items-center justify-center shadow-2xl active:scale-95 transition-transform">
+                    <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center text-white shadow-inner border-t border-white/20">
+                        <QrCode className="w-5 h-5" />
                     </div>
                 </div>
                 {/* Decorative Elements */}
                 <div className="absolute -top-3 -right-3">
-                    <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 animate-bounce delay-100" />
+                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500 animate-bounce delay-100" />
                 </div>
              </div>
              
              {/* Text Content */}
-             <div className="space-y-1.5 mb-8 max-w-[280px]">
-                 <h1 className="text-3xl font-black text-white tracking-tight">
+             <div className="space-y-1 mb-6 max-w-[280px]">
+                 <h1 className="text-2xl font-black text-white tracking-tight">
                     Scan & Dine
                  </h1>
-                 <p className="text-zinc-500 text-base font-medium leading-normal">
+                 <p className="text-zinc-500 text-sm font-medium leading-normal">
                     Scan a table QR code to view the menu
                  </p>
              </div>
@@ -472,7 +472,7 @@ const App: React.FC = () => {
              {/* Primary Action Button */}
              <button 
                 onClick={() => setCurrentActivity(Activity.FULL_SCANNER)}
-                className="group relative flex items-center gap-3 px-6 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full font-bold text-base shadow-[0_8px_30px_rgba(249,115,22,0.4)] active:scale-95 transition-all hover:shadow-[0_12px_40px_rgba(249,115,22,0.5)] border border-white/10"
+                className="group relative flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full font-bold text-sm shadow-[0_8px_30px_rgba(249,115,22,0.4)] active:scale-95 transition-all hover:shadow-[0_12px_40px_rgba(249,115,22,0.5)] border border-white/10"
              >
                 <div className="bg-white/20 p-1 rounded-full">
                     <QrCode className="w-3.5 h-3.5 text-white" />
