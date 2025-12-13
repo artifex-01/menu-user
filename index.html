@@ -8,6 +8,21 @@
     <meta name="theme-color" content="#000000" />
     <title>TableScan & Dine</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            padding: {
+              'safe-top': 'env(safe-area-inset-top, 20px)',
+              'safe-bottom': 'env(safe-area-inset-bottom, 20px)',
+            },
+            margin: {
+              'safe-top': 'env(safe-area-inset-top, 20px)',
+            }
+          }
+        }
+      }
+    </script>
     <style>
       /* Globally hide scrollbars for a clean native feel */
       ::-webkit-scrollbar {
@@ -45,15 +60,9 @@
 }
 </script>
 </head>
-  <!-- Center content on desktop to simulate device -->
-  <body class="bg-zinc-950 text-gray-900 h-[100dvh] w-screen overflow-hidden flex items-center justify-center font-sans">
-    <!-- 
-      Phone Chassis Simulator 
-      - Max width 440px (~6.9 inch logical width)
-      - Rounded corners to match modern flagship phones
-      - Border simulates bezel
-    -->
-    <div id="root" class="w-full h-full sm:max-w-[440px] sm:max-h-[956px] sm:h-[92vh] bg-black sm:rounded-[3.5rem] sm:border-[10px] sm:border-zinc-900 relative shadow-2xl overflow-hidden ring-8 ring-zinc-900/50"></div>
+  <!-- Full screen layout without phone simulation -->
+  <body class="bg-black text-gray-900 h-[100dvh] w-screen overflow-hidden font-sans">
+    <div id="root" class="w-full h-full relative overflow-hidden bg-black"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
