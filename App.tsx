@@ -438,33 +438,33 @@ const App: React.FC = () => {
       </div>
 
       {/* Upper Half: Call to Action Area */}
-      <div className="h-[55%] relative w-full bg-zinc-950 shrink-0 flex flex-col items-center justify-center text-center p-6 pt-24 overflow-hidden">
+      <div className="h-[52%] relative w-full bg-zinc-950 shrink-0 flex flex-col items-center justify-center text-center p-6 pt-20 overflow-hidden">
          
          {/* Background Glow */}
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-orange-600/10 rounded-full blur-[100px] pointer-events-none"></div>
 
          <div className="relative z-10 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
              
              {/* Hero Icon */}
-             <div className="mb-8 relative group" onClick={() => setCurrentActivity(Activity.FULL_SCANNER)}>
-                <div className="absolute inset-0 bg-gradient-to-tr from-orange-600 to-amber-600 rounded-[2rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
-                <div className="relative w-32 h-32 bg-[#121214] border border-white/10 rounded-[2rem] flex items-center justify-center shadow-2xl active:scale-95 transition-transform">
-                    <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center text-white shadow-inner border-t border-white/20">
-                        <QrCode className="w-8 h-8" />
+             <div className="mb-6 relative group" onClick={() => setCurrentActivity(Activity.FULL_SCANNER)}>
+                <div className="absolute inset-0 bg-gradient-to-tr from-orange-600 to-amber-600 rounded-[1.5rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
+                <div className="relative w-24 h-24 bg-[#121214] border border-white/10 rounded-[1.5rem] flex items-center justify-center shadow-2xl active:scale-95 transition-transform">
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center text-white shadow-inner border-t border-white/20">
+                        <QrCode className="w-6 h-6" />
                     </div>
                 </div>
                 {/* Decorative Elements */}
-                <div className="absolute -top-4 -right-4">
-                    <Star className="w-6 h-6 text-yellow-500 fill-yellow-500 animate-bounce delay-100" />
+                <div className="absolute -top-3 -right-3">
+                    <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 animate-bounce delay-100" />
                 </div>
              </div>
              
              {/* Text Content */}
-             <div className="space-y-2 mb-10 max-w-[280px]">
-                 <h1 className="text-4xl font-black text-white tracking-tight">
+             <div className="space-y-1.5 mb-8 max-w-[280px]">
+                 <h1 className="text-3xl font-black text-white tracking-tight">
                     Scan & Dine
                  </h1>
-                 <p className="text-zinc-500 text-lg font-medium leading-normal">
+                 <p className="text-zinc-500 text-base font-medium leading-normal">
                     Scan a table QR code to view the menu
                  </p>
              </div>
@@ -472,13 +472,13 @@ const App: React.FC = () => {
              {/* Primary Action Button */}
              <button 
                 onClick={() => setCurrentActivity(Activity.FULL_SCANNER)}
-                className="group relative flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full font-bold text-lg shadow-[0_8px_30px_rgba(249,115,22,0.4)] active:scale-95 transition-all hover:shadow-[0_12px_40px_rgba(249,115,22,0.5)] border border-white/10"
+                className="group relative flex items-center gap-3 px-6 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full font-bold text-base shadow-[0_8px_30px_rgba(249,115,22,0.4)] active:scale-95 transition-all hover:shadow-[0_12px_40px_rgba(249,115,22,0.5)] border border-white/10"
              >
-                <div className="bg-white/20 p-1.5 rounded-full">
-                    <QrCode className="w-4 h-4 text-white" />
+                <div className="bg-white/20 p-1 rounded-full">
+                    <QrCode className="w-3.5 h-3.5 text-white" />
                 </div>
                 <span>Scan QR Code</span>
-                <ArrowRight className="w-5 h-5 opacity-70 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform" />
              </button>
          </div>
       </div>
