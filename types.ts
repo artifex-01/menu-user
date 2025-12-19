@@ -10,6 +10,7 @@ export interface Store {
     lat: number;
     lng: number;
   };
+  isPromoted?: boolean;
 }
 
 export interface Coordinates {
